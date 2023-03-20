@@ -15,8 +15,8 @@
 import sys
 import unittest
 
-import json5
-import json5.tool
+import mjson5
+import mjson5.tool
 
 from .host_fake import FakeHost
 
@@ -61,7 +61,7 @@ class UnitTestMixin(object):
         if stdin is not None:
             host.stdin.write(str(stdin))
             host.stdin.seek(0)
-        actual_ret = json5.tool.main(args, host)
+        actual_ret = mjson5.tool.main(args, host)
         actual_out = host.stdout.getvalue()
         actual_err = host.stderr.getvalue()
         if returncode is not None:
@@ -138,7 +138,7 @@ class ToolTest(UnitTestMixin, CheckMixin, unittest.TestCase):
 
     def test_version(self):
         self.check_cmd(['--version'], returncode=0,
-                       out=str(json5.VERSION) + '\n')
+                       out=str(mjson5.VERSION) + '\n')
 
 
 if __name__ == '__main__':  # pragma: no cover

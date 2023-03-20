@@ -26,7 +26,7 @@ REPO_DIR = os.path.dirname(THIS_DIR)
 if not REPO_DIR in sys.path:
     sys.path.insert(0, REPO_DIR)
 
-import json5  # pylint: disable=wrong-import-position
+import mjson5  # pylint: disable=wrong-import-position
 
 
 ALL_BENCHMARKS = (
@@ -76,7 +76,7 @@ def main():
             start = time.time()
             json_obj = json.loads(c, cls=maker)
             mid = time.time()
-            json5_obj = json5.loads(c)
+            json5_obj = mjson5.loads(c)
             end = time.time()
 
             json_time += mid - start

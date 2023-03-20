@@ -21,7 +21,7 @@ import unittest
 from collections import OrderedDict
 from string import printable
 
-import json5
+import mjson5
 
 try:
     # Make the `hypothesis` library optional, so that the other tests will
@@ -48,11 +48,11 @@ class TestLoads(unittest.TestCase):
     maxDiff = None
 
     def check(self, s, obj):
-        self.assertEqual(json5.loads(s), obj)
+        self.assertEqual(mjson5.loads(s), obj)
 
     def check_fail(self, s, err=None):
         try:
-            json5.loads(s)
+            mjson5.loads(s)
             self.fail()  # pragma: no cover
         except ValueError as e:
             if err:
@@ -65,7 +65,7 @@ class TestLoads(unittest.TestCase):
         self.check('[ 0 , 1 ]', [0, 1])
 
         try:
-            json5.loads('[ ,]')
+            mjson5.loads('[ ,]')
             self.fail()
         except ValueError as e:
             self.assertIn('Unexpected "," at column 3', str(e))
@@ -75,10 +75,10 @@ class TestLoads(unittest.TestCase):
         self.check('false', False)
 
     def test_cls_is_not_supported(self):
-        self.assertRaises(AssertionError, json5.loads, '1', cls=lambda x: x)
+        self.assertRaises(AssertionError, mjson5.loads, '1', cls=lambda x: x)
 
     def test_duplicate_keys_should_be_allowed(self):
-        self.assertEqual(json5.loads('{foo: 1, foo: 2}',
+        self.assertEqual(mjson5.loads('{foo: 1, foo: 2}',
                                      allow_duplicate_keys=True),
                          {"foo": 2})
 
@@ -86,7 +86,7 @@ class TestLoads(unittest.TestCase):
         self.check('{foo: 1, foo: 2}', {"foo": 2})
 
     def test_duplicate_keys_should_not_be_allowed(self):
-        self.assertRaises(ValueError, json5.loads, '{foo: 1, foo: 2}',
+        self.assertRaises(ValueError, mjson5.loads, '{foo: 1, foo: 2}',
                           allow_duplicate_keys=False)
 
     def test_empty_strings_are_errors(self):
@@ -97,7 +97,7 @@ class TestLoads(unittest.TestCase):
             s = '"\xf6"'
         else:
             s = b'"\xf6"'
-        self.assertEqual(json5.loads(s, encoding='iso-8859-1'),
+        self.assertEqual(mjson5.loads(s, encoding='iso-8859-1'),
                          u'\xf6')
 
     def test_numbers(self):
@@ -121,8 +121,8 @@ class TestLoads(unittest.TestCase):
         # names
         self.check('Infinity', float('inf'))
         self.check('-Infinity', float('-inf'))
-        self.assertTrue(math.isnan(json5.loads('NaN')))
-        self.assertTrue(math.isnan(json5.loads('-NaN')))
+        self.assertTrue(math.isnan(mjson5.loads('NaN')))
+        self.assertTrue(math.isnan(mjson5.loads('-NaN')))
 
         # syntax errors
         self.check_fail('14d', '<string>:1 Unexpected "d" at column 3')
@@ -146,12 +146,12 @@ class TestLoads(unittest.TestCase):
 
     def test_object_hook(self):
         hook = lambda d: [d]
-        self.assertEqual(json5.loads('{foo: 1}', object_hook=hook),
+        self.assertEqual(mjson5.loads('{foo: 1}', object_hook=hook),
                          [{"foo": 1}])
 
     def test_object_pairs_hook(self):
         hook = lambda pairs: pairs
-        self.assertEqual(json5.loads('{foo: 1, bar: 2}',
+        self.assertEqual(mjson5.loads('{foo: 1, bar: 2}',
                                      object_pairs_hook=hook),
                          [('foo', 1), ('bar', 2)])
 
@@ -163,23 +163,23 @@ class TestLoads(unittest.TestCase):
 
     def test_parse_constant(self):
         hook = lambda x: x
-        self.assertEqual(json5.loads('-Infinity', parse_constant=hook),
+        self.assertEqual(mjson5.loads('-Infinity', parse_constant=hook),
                          '-Infinity')
-        self.assertEqual(json5.loads('NaN', parse_constant=hook),
+        self.assertEqual(mjson5.loads('NaN', parse_constant=hook),
                          'NaN')
 
     def test_parse_float(self):
         hook = lambda x: x
-        self.assertEqual(json5.loads('1.0', parse_float=hook), '1.0')
+        self.assertEqual(mjson5.loads('1.0', parse_float=hook), '1.0')
 
     def test_parse_int(self):
         hook = lambda x, base=10: x
-        self.assertEqual(json5.loads('1', parse_int=hook), '1')
+        self.assertEqual(mjson5.loads('1', parse_int=hook), '1')
 
     def test_sample_file(self):
         path = os.path.join(os.path.dirname(__file__), '..', 'sample.json5')
         with open(path) as fp:
-            obj = json5.load(fp)
+            obj = mjson5.load(fp)
         self.assertEqual({
             u'oh': [
                 u"we shouldn't forget",
@@ -271,7 +271,7 @@ class TestLoads(unittest.TestCase):
 class TestDump(unittest.TestCase):
     def test_basic(self):
         sio = io.StringIO()
-        json5.dump(True, sio)
+        mjson5.dump(True, sio)
         self.assertEqual('true', sio.getvalue())
 
 
@@ -279,14 +279,14 @@ class TestDumps(unittest.TestCase):
     maxDiff = None
 
     def check(self, obj, s):
-        self.assertEqual(json5.dumps(obj), s)
+        self.assertEqual(mjson5.dumps(obj), s)
 
     def test_allow_duplicate_keys(self):
-        self.assertIn(json5.dumps({1: "foo", "1": "bar"}),
+        self.assertIn(mjson5.dumps({1: "foo", "1": "bar"}),
                       {'{"1": "foo", "1": "bar"}',
                        '{"1": "bar", "1": "foo"}'})
 
-        self.assertRaises(ValueError, json5.dumps,
+        self.assertRaises(ValueError, mjson5.dumps,
                           {1: "foo", "1": "bar"},
                            allow_duplicate_keys=False)
 
@@ -304,12 +304,12 @@ class TestDumps(unittest.TestCase):
         # This tests a trivial cycle.
         l = [1, 2, 3]
         l[2] = l
-        self.assertRaises(ValueError, json5.dumps, l)
+        self.assertRaises(ValueError, mjson5.dumps, l)
 
         # This checks that json5 doesn't raise an error. However,
         # the underlying Python implementation likely will.
         try:
-            json5.dumps(l, check_circular=False)
+            mjson5.dumps(l, check_circular=False)
             self.fail()  # pragma: no cover
         except Exception as e:
             self.assertNotIn(str(e), 'Circular reference detected')
@@ -329,7 +329,7 @@ class TestDumps(unittest.TestCase):
         z['y'] = y
         z['x']['y'] = y
         z['y']['x'] = x
-        self.assertRaises(ValueError, json5.dumps, z)
+        self.assertRaises(ValueError, mjson5.dumps, z)
 
     def test_custom_arrays(self):
         class MyArray(object):
@@ -344,7 +344,7 @@ class TestDumps(unittest.TestCase):
             def __len__(self):
                 return 3
 
-        self.assertEqual(json5.dumps(MyArray()), '[0, 1, 1]')
+        self.assertEqual(mjson5.dumps(MyArray()), '[0, 1, 1]')
 
     def test_custom_numbers(self):
         # See https://github.com/dpranke/pyjson5/issues/57: we
@@ -356,13 +356,13 @@ class TestDumps(unittest.TestCase):
             def __repr__(self):
                 return 'fail'
 
-        self.assertEqual(json5.dumps(MyInt(5)), '5')
+        self.assertEqual(mjson5.dumps(MyInt(5)), '5')
 
         class MyFloat(float):
             def __repr__(self):
                 return 'fail'
 
-        self.assertEqual(json5.dumps(MyFloat(0.5)), '0.5')
+        self.assertEqual(mjson5.dumps(MyFloat(0.5)), '0.5')
 
     def test_custom_objects(self):
         class MyDict(object):
@@ -379,13 +379,13 @@ class TestDumps(unittest.TestCase):
             def __len__(self):
                 return 2
 
-        self.assertEqual(json5.dumps(MyDict()), '{a: 1, b: 2}')
+        self.assertEqual(mjson5.dumps(MyDict()), '{a: 1, b: 2}')
 
     def test_custom_strings(self):
         class MyStr(str):
             pass
 
-        self.assertEqual(json5.dumps({'foo': MyStr('bar')}), '{foo: "bar"}')
+        self.assertEqual(mjson5.dumps({'foo': MyStr('bar')}), '{foo: "bar"}')
 
     def test_default(self):
 
@@ -393,36 +393,36 @@ class TestDumps(unittest.TestCase):
             del obj
             return 'something'
 
-        self.assertRaises(TypeError, json5.dumps, set())
-        self.assertEqual(json5.dumps(set(), default=_custom_serializer),
+        self.assertRaises(TypeError, mjson5.dumps, set())
+        self.assertEqual(mjson5.dumps(set(), default=_custom_serializer),
                          '"something"')
 
     def test_ensure_ascii(self):
         self.check(u'\u00fc', '"\\u00fc"')
-        self.assertEqual(json5.dumps(u'\u00fc', ensure_ascii=False),
+        self.assertEqual(mjson5.dumps(u'\u00fc', ensure_ascii=False),
                          u'"\u00fc"')
 
     def test_indent(self):
-        self.assertEqual(json5.dumps([1, 2, 3], indent=None),
+        self.assertEqual(mjson5.dumps([1, 2, 3], indent=None),
                          u'[1, 2, 3]')
-        self.assertEqual(json5.dumps([1, 2, 3], indent=-1),
+        self.assertEqual(mjson5.dumps([1, 2, 3], indent=-1),
                          u'[\n1,\n2,\n3,\n]')
-        self.assertEqual(json5.dumps([1, 2, 3], indent=0),
+        self.assertEqual(mjson5.dumps([1, 2, 3], indent=0),
                          u'[\n1,\n2,\n3,\n]')
-        self.assertEqual(json5.dumps([], indent=2),
+        self.assertEqual(mjson5.dumps([], indent=2),
                          u'[]')
-        self.assertEqual(json5.dumps([1, 2, 3], indent=2),
+        self.assertEqual(mjson5.dumps([1, 2, 3], indent=2),
                          u'[\n  1,\n  2,\n  3,\n]')
-        self.assertEqual(json5.dumps([1, 2, 3], indent=' '),
+        self.assertEqual(mjson5.dumps([1, 2, 3], indent=' '),
                          u'[\n 1,\n 2,\n 3,\n]')
-        self.assertEqual(json5.dumps([1, 2, 3], indent='++'),
+        self.assertEqual(mjson5.dumps([1, 2, 3], indent='++'),
                          u'[\n++1,\n++2,\n++3,\n]')
-        self.assertEqual(json5.dumps([[1, 2, 3]], indent=2),
+        self.assertEqual(mjson5.dumps([[1, 2, 3]], indent=2),
                          u'[\n  [\n    1,\n    2,\n    3,\n  ],\n]')
 
-        self.assertEqual(json5.dumps({}, indent=2),
+        self.assertEqual(mjson5.dumps({}, indent=2),
                          u'{}')
-        self.assertEqual(json5.dumps({'foo': 'bar', 'baz': 'quux'}, indent=2),
+        self.assertEqual(mjson5.dumps({'foo': 'bar', 'baz': 'quux'}, indent=2),
                          u'{\n  foo: "bar",\n  baz: "quux",\n}')
 
     def test_numbers(self):
@@ -432,11 +432,11 @@ class TestDumps(unittest.TestCase):
         self.check(float('-inf'), '-Infinity')
         self.check(float('nan'), 'NaN')
 
-        self.assertRaises(ValueError, json5.dumps,
+        self.assertRaises(ValueError, mjson5.dumps,
                           float('inf'), allow_nan=False)
-        self.assertRaises(ValueError, json5.dumps,
+        self.assertRaises(ValueError, mjson5.dumps,
                           float('-inf'), allow_nan=False)
-        self.assertRaises(ValueError, json5.dumps,
+        self.assertRaises(ValueError, mjson5.dumps,
                           float('nan'), allow_nan=False)
 
     def test_null(self):
@@ -454,11 +454,11 @@ class TestDumps(unittest.TestCase):
         self.check({'newbie': 1}, '{newbie: 1}')
 
     def test_non_string_keys(self):
-        self.assertEqual(json5.dumps({False: 'a', 1: 'b', 2.0: 'c', None: 'd'}),
+        self.assertEqual(mjson5.dumps({False: 'a', 1: 'b', 2.0: 'c', None: 'd'}),
                          '{"false": "a", "1": "b", "2.0": "c", "null": "d"}')
 
     def test_quote_keys(self):
-        self.assertEqual(json5.dumps({"foo": 1}, quote_keys=True),
+        self.assertEqual(mjson5.dumps({"foo": 1}, quote_keys=True),
                          '{"foo": 1}')
 
     def test_strings(self):
@@ -474,11 +474,11 @@ class TestDumps(unittest.TestCase):
     def test_skip_keys(self):
         od = OrderedDict()
         od[(1, 2)] = 2
-        self.assertRaises(TypeError, json5.dumps, od)
-        self.assertEqual(json5.dumps(od, skipkeys=True), '{}')
+        self.assertRaises(TypeError, mjson5.dumps, od)
+        self.assertEqual(mjson5.dumps(od, skipkeys=True), '{}')
 
         od['foo'] = 1
-        self.assertEqual(json5.dumps(od, skipkeys=True), '{foo: 1}')
+        self.assertEqual(mjson5.dumps(od, skipkeys=True), '{foo: 1}')
 
         # Also test that having an invalid key as the last element
         # doesn't incorrectly add a trailing comma (see
@@ -486,27 +486,27 @@ class TestDumps(unittest.TestCase):
         od = OrderedDict()
         od['foo'] = 1
         od[(1, 2)] = 2
-        self.assertEqual(json5.dumps(od, skipkeys=True), '{foo: 1}')
+        self.assertEqual(mjson5.dumps(od, skipkeys=True), '{foo: 1}')
 
     def test_sort_keys(self):
         od = OrderedDict()
         od['foo'] = 1
         od['bar'] = 2
-        self.assertEqual(json5.dumps(od, sort_keys=True),
+        self.assertEqual(mjson5.dumps(od, sort_keys=True),
                          '{bar: 2, foo: 1}')
 
     def test_trailing_commas(self):
         # By default, multi-line dicts and lists should have trailing
         # commas after their last items.
-        self.assertEqual(json5.dumps({"foo": 1}, indent=2),
+        self.assertEqual(mjson5.dumps({"foo": 1}, indent=2),
                          '{\n  foo: 1,\n}')
-        self.assertEqual(json5.dumps([1], indent=2),
+        self.assertEqual(mjson5.dumps([1], indent=2),
                          '[\n  1,\n]')
 
-        self.assertEqual(json5.dumps({"foo": 1}, indent=2,
+        self.assertEqual(mjson5.dumps({"foo": 1}, indent=2,
                                      trailing_commas=False),
                          '{\n  foo: 1\n}')
-        self.assertEqual(json5.dumps([1], indent=2, trailing_commas=False),
+        self.assertEqual(mjson5.dumps([1], indent=2, trailing_commas=False),
                          '[\n  1\n]')
 
     def test_supplemental_unicode(self):
@@ -519,15 +519,15 @@ class TestDumps(unittest.TestCase):
             pass
 
     def test_empty_key(self):
-        self.assertEqual(json5.dumps({'': 'value'}), '{"": "value"}')
+        self.assertEqual(mjson5.dumps({'': 'value'}), '{"": "value"}')
 
     @given(some_json)
     def test_object_roundtrip(self, input_object):
         dumped_string_json = json.dumps(input_object)
-        dumped_string_json5 = json5.dumps(input_object)
+        dumped_string_json5 = mjson5.dumps(input_object)
 
-        parsed_object_json = json5.loads(dumped_string_json)
-        parsed_object_json5 = json5.loads(dumped_string_json5)
+        parsed_object_json = mjson5.loads(dumped_string_json)
+        parsed_object_json5 = mjson5.loads(dumped_string_json5)
 
         assert parsed_object_json == input_object
         assert parsed_object_json5 == input_object

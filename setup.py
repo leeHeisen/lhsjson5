@@ -21,7 +21,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 if here not in sys.path:
     sys.path.insert(0, here)
 
-import json5
+import mjson5
 
 with open(os.path.join(here, 'README.md')) as fp:
     long_description = fp.read()
