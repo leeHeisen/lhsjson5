@@ -28,7 +28,7 @@ with open(os.path.join(here, 'README.md')) as fp:
 
 
 setup(
-    name='json5',
+    name='mjson5',
     packages=find_packages(exclude=['tests']),
     entry_points={
         'console_scripts': [
@@ -42,13 +42,13 @@ setup(
             'hypothesis'
         ]
     },
-    version=json5.VERSION,
+    version="{{VERSION_PLACEHOLDER}}",
     author='Dirk Pranke',
-    author_email='dpranke@chromium.org',
+    author_email='leeheisen@126.com',
     description=long_description.splitlines()[2],
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/dpranke/pyjson5',
+    url='https://github.com/leeHeisen/mjson5.git',
     license='Apache',
     classifiers=[
         'Development Status :: 5 - Production/Stable',

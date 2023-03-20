@@ -372,7 +372,7 @@ def _dump_dict(obj, skipkeys, ensure_ascii, check_circular, allow_nan,
         return u'{}'
 
     if sort_keys:
-        keys = sorted(obj.keys())
+        keys = sorted(obj.keys(), lambda item: tuple(int(i) if i.isdigit() else i for i in item.split("_")))
     else:
         keys = obj.keys()
 
