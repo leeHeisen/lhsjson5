@@ -363,6 +363,14 @@ def _dumps(obj, skipkeys, ensure_ascii, check_circular, allow_nan, indent,
         seen.remove(i)
     return False, s
 
+def get_max_digit_len(obj):
+    l = 0
+    for k in obj.keys():
+        for i in k.split("_"):
+            if i.isdigit():
+                if len(i) > l:
+                    l = len(i)
+    return l
 
 def _dump_dict(obj, skipkeys, ensure_ascii, check_circular, allow_nan,
                indent, separators, default, sort_keys,
@@ -371,8 +379,10 @@ def _dump_dict(obj, skipkeys, ensure_ascii, check_circular, allow_nan,
     if not obj:
         return u'{}'
 
+
+    max_digit_len = get_max_digit_len(obj)
     if sort_keys:
-        keys = sorted(obj.keys(), key=lambda item: tuple(int(i) if i.isdigit() else i for i in item.split("_")))
+        keys = sorted(obj.keys(), key=lambda item: tuple([i.zfill(max_digit_len) if i.isdigit() else i for i in item.split("_")]))
         # print(keys)
     else:
         keys = obj.keys()
