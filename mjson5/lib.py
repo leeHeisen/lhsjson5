@@ -380,8 +380,8 @@ def _dump_dict(obj, skipkeys, ensure_ascii, check_circular, allow_nan,
         return u'{}'
 
 
-    max_digit_len = get_max_digit_len(obj)
     if sort_keys:
+        max_digit_len = get_max_digit_len(obj)
         keys = sorted(obj.keys(), key=lambda item: tuple([i.zfill(max_digit_len) if i.isdigit() else i for i in item.split("_")]))
         # print(keys)
     else:
